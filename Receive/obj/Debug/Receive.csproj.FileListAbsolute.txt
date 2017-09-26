@@ -1,0 +1,21 @@
+d:\我的文档\documents\visual studio 2015\Projects\Receive\Receive\bin\Debug\Receive.exe.config
+d:\我的文档\documents\visual studio 2015\Projects\Receive\Receive\bin\Debug\Receive.exe
+d:\我的文档\documents\visual studio 2015\Projects\Receive\Receive\bin\Debug\Receive.pdb
+d:\我的文档\documents\visual studio 2015\Projects\Receive\Receive\bin\Debug\RabbitMQ.Client.dll
+d:\我的文档\documents\visual studio 2015\Projects\Receive\Receive\obj\Debug\Receive.exe
+d:\我的文档\documents\visual studio 2015\Projects\Receive\Receive\obj\Debug\Receive.pdb
+d:\我的文档\documents\visual studio 2015\Projects\Receive\Receive\obj\Debug\Receive.csprojResolveAssemblyReference.cache
+E:\c-projects\Receive\Receive\bin\Debug\Receive.exe.config
+E:\c-projects\Receive\Receive\obj\Debug\Receive.exe
+E:\c-projects\Receive\Receive\obj\Debug\Receive.pdb
+E:\c-projects\Receive\Receive\bin\Debug\Receive.exe
+E:\c-projects\Receive\Receive\bin\Debug\Receive.pdb
+E:\c-projects\Receive\Receive\bin\Debug\RabbitMQ.Client.dll
+E:\csharp\Receive\Receive\bin\Debug\Receive.exe.config
+E:\csharp\Receive\Receive\obj\Debug\Receive.exe
+E:\csharp\Receive\Receive\obj\Debug\Receive.pdb
+E:\csharp\Receive\Receive\bin\Debug\Receive.exe
+E:\csharp\Receive\Receive\bin\Debug\Receive.pdb
+E:\csharp\Receive\Receive\bin\Debug\RabbitMQ.Client.dll
+E:\csharp\Receive\Receive\obj\Debug\Receive.csprojResolveAssemblyReference.cache
+E:\c-projects\Receive\Receive\obj\Debug\Receive.csprojResolveAssemblyReference.cache

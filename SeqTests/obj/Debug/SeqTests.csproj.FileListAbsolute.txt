@@ -1,0 +1,11 @@
+E:\c-projects\Receive\SeqTests\bin\Debug\SeqTests.dll
+E:\c-projects\Receive\SeqTests\bin\Debug\SeqTests.pdb
+E:\c-projects\Receive\SeqTests\bin\Debug\Microsoft.VisualStudio.QualityTools.UnitTestFramework.dll
+E:\c-projects\Receive\SeqTests\bin\Debug\Receive.exe
+E:\c-projects\Receive\SeqTests\bin\Debug\RabbitMQ.Client.dll
+E:\c-projects\Receive\SeqTests\bin\Debug\MySql.Data.dll
+E:\c-projects\Receive\SeqTests\bin\Debug\Receive.pdb
+E:\c-projects\Receive\SeqTests\bin\Debug\zh-Hans\Microsoft.VisualStudio.QualityTools.UnitTestFramework.resources.dll
+E:\c-projects\Receive\SeqTests\obj\Debug\SeqTests.csprojResolveAssemblyReference.cache
+E:\c-projects\Receive\SeqTests\obj\Debug\SeqTests.dll
+E:\c-projects\Receive\SeqTests\obj\Debug\SeqTests.pdb

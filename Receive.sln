@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Receive", "Receive\Receive.csproj", "{2B6648CC-5CD2-4E31-B834-0BDAA18153CD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SeqTests", "SeqTests\SeqTests.csproj", "{73AE1F01-B05F-4CE7-A231-DBD8140F0BF0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2B6648CC-5CD2-4E31-B834-0BDAA18153CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2B6648CC-5CD2-4E31-B834-0BDAA18153CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2B6648CC-5CD2-4E31-B834-0BDAA18153CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2B6648CC-5CD2-4E31-B834-0BDAA18153CD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73AE1F01-B05F-4CE7-A231-DBD8140F0BF0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73AE1F01-B05F-4CE7-A231-DBD8140F0BF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73AE1F01-B05F-4CE7-A231-DBD8140F0BF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73AE1F01-B05F-4CE7-A231-DBD8140F0BF0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
