@@ -1,4 +1,4 @@
-﻿using ChatServer.Codec;
+using ChatServer.Codec;
 using ChatServer.Model;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -17,69 +17,79 @@ namespace Receive
 {
     class Program
     {
-        private static Log logger = new Log("logs/Info" + DateTime.Now.ToLongDateString());
+        private static readonly log4net.ILog logger =
+            log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+        private static DBConnectionSingletion pool = DBConnectionSingletion.Instance;//获取连接池对象实例
+
         static void Main(string[] args)
         {
-            var stopWatch = new Stopwatch();
-            stopWatch.Start();
+            ConsumeMessages();
+        }
+
+        private static void ConsumeMessages()
+        {
             var mqSec = ConfigurationManager.GetSection("MqSection") as NameValueCollection;
             string queueName = mqSec["Queue"];//消息队列名
             ushort prefetchCount = ushort.Parse(mqSec["PrefetchCount"]);
 
-            var taskSeq = ConfigurationManager.GetSection("TaskSection") as NameValueCollection;
-            int taskNo = int.Parse(taskSeq["TaskNo"]);
-            using (var connection = GetRabbitMqConnection())
-            using (var channel = connection.CreateModel())
+            try
             {
-                stopWatch.Stop();
-                long ms = stopWatch.ElapsedMilliseconds;
-                logger.log("======connected to mq server cost " + ms + "ms=====");
-
-                channel.QueueDeclare(queue: queueName,//指定发送消息的queue，和生产者的queue匹配
-                                     durable: true,
-                                     exclusive: false,
-                                     autoDelete: false,
-                                     arguments: null);
-
-                channel.BasicQos(prefetchSize: 0, prefetchCount: prefetchCount, global: false);
-
-                Console.WriteLine(" [*] Waiting for messages.");
-
-                
-
-                //注册接收事件，一旦创建连接就去拉取消息
-
-                for (int i = 0;i < taskNo; i++)
+                using (var connection = GetRabbitMqConnection())
+                using (var channel = connection.CreateModel())
                 {
+                    channel.QueueDeclare(queue: queueName,//指定发送消息的queue，和生产者的queue匹配
+                                         durable: true,
+                                         exclusive: false,
+                                         autoDelete: false,
+                                         arguments: null);
+
+                    channel.BasicQos(prefetchSize: 0, prefetchCount: prefetchCount, global: false);
+
+                    var properties = channel.CreateBasicProperties();
+                    properties.DeliveryMode = 2;
+                    properties.Persistent = true;
+
+                    Console.WriteLine(" [*] Waiting for messages.");
+
+                    //注册接收事件，一旦创建连接就去拉取消息
                     var consumer = new EventingBasicConsumer(channel);
+
                     consumer.Received += (model, ea) =>
                     {
                         var body = ea.Body;
-
-                        //处理消息
+                        //处理消息                  
+                        var stopWatch = Stopwatch.StartNew();
+                        stopWatch.Start();         
                         bool isProcessed = ProcessMessage(body);
+                        //bool isProcessed = true;
                         if (isProcessed)
                         {
                             //发送反馈，确认已处理该条消息
                             channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
+                            stopWatch.Stop();
+                            string lan = stopWatch.ElapsedMilliseconds.ToString();
+                            logger.Info("one msg has been acked cost "+lan+"ms ");
                         }
-                    };
 
+                    };
                     channel.BasicConsume(queue: queueName,
-                                         noAck: false,//和tcp协议的ack一样，为false则服务端必须在收到客户端的回执（ack）后才能删除本条消息
-                                         consumer: consumer);
-                    Console.WriteLine("======consumer "+i+" created=====");
+                            noAck: false,//和tcp协议的ack一样，为false则服务端必须在收到客户端的回执（ack）后才能删除本条消息
+                            consumer: consumer);
+
+                    Console.WriteLine(" Press [enter] to exit.");
+                    Console.ReadLine();
                 }
-                
-                Console.WriteLine(" Press [enter] to exit.");
-                Console.ReadLine();
+
+            }
+            catch (Exception e)
+            {
+                logger.Error(e.Message);
             }
         }
 
         private static bool ProcessMessage(byte[] body)
         {
-            var stopWatch = new Stopwatch();
-            stopWatch.Start();
             try
             {
                 MsgDecoder msgDecoder = new MsgDecoder();
@@ -90,7 +100,7 @@ namespace Receive
                 content = BitConverter.ToString(body).Replace("-", " ");
 
                 Console.WriteLine("Received: {0}", content);
-                logger.log("<<Info>>Received: " + content);
+                logger.Info("Received: " + content);
 
                 //终端设备号 消息体前6个byte
                 String deviceCode = body[0].ToString("X2") + body[1].ToString("X2") +
@@ -127,9 +137,7 @@ namespace Receive
                 int yte = packageData.locationInfo.yte;//信号强度
                 int gnss = packageData.locationInfo.gnss;//定位卫星数
 
-                DBConnectionSingletion pool = DBConnectionSingletion.Instance;//获取连接池对象实例
-                                                                              //从配置文件读取连接字符串
-                string connectionStr =
+                string connectionStr =  //从配置文件读取连接字符串
                         WebConfigurationManager.ConnectionStrings["connStr1"].ConnectionString;
 
                 //string connectionStr = "data source='" + datasource + "';user id='" + uname + "';password='" + pwd + "';charset=utf8";
@@ -144,7 +152,7 @@ namespace Receive
                 }
                 catch (Exception e)
                 {
-                    logger.log("<<Error>>" + e.Message);
+                    logger.Error(e.Message);
                 }
 
                 //将连接对象还给连接池
@@ -167,7 +175,7 @@ namespace Receive
                     + " where device_code='{0}';",
                     deviceCode, alc, bst, lat, lon, hgt, spd, agl, TbUtil.GetGMTInMS(gtm), mlg, oil, spd2, est, bst, io, ad1, yte, gnss, "FROM_UNIXTIME(NOW())", vendor);
                     Console.WriteLine("<<Info>>update gps_main.t_gps_snapshot {0}", deviceCode);
-                    logger.log("<<Info>>update gps_main.t_gps_snapshot " + deviceCode);
+                    logger.Info("update gps_main.t_gps_snapshot " + deviceCode);
                     if (conn != null && !conn.State.Equals("open"))
                     {
                         conn = pool.BorrowDBConnection();//从连接池借一个连接对象
@@ -186,7 +194,7 @@ namespace Receive
                         "VALUES ('{0}',{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},'{15}',{16},{17},{18},'{19}');",
                         deviceCode, alc, bst, lat, lon, hgt, spd, agl, TbUtil.GetGMTInMS(gtm), mlg, oil, spd2, est, bst, io, ad1, yte, gnss, "FROM_UNIXTIME(NOW())", vendor);
                     Console.WriteLine("<<Info>>insert {0} {1}", tbPath, deviceCode);
-                    logger.log("<<Info>>insert " + tbPath + " " + deviceCode);
+                    logger.Info("insert " + tbPath + " " + deviceCode);
 
                     if (conn != null && !conn.State.Equals("open"))
                     {
@@ -236,7 +244,7 @@ namespace Receive
                     String insertMainSql = string.Format("INSERT INTO gps_main.t_gps_main (device_code,plate_no,vendor_code,trail_seq_no,alarm_seq_no,status,remark)" +
                             "VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}');", deviceCode, plateNo, vendor, latestSeq, 0, 10, remark);
                     Console.WriteLine("<<Info>>insert gps_main.t_gps_main {0}", deviceCode);
-                    logger.log("<<Info>>insert gps_main.t_gps_main " + deviceCode);
+                    logger.Info("insert gps_main.t_gps_main " + deviceCode);
 
                     if (conn != null && !conn.State.Equals("open"))
                     {
@@ -256,7 +264,7 @@ namespace Receive
                         conn = pool.BorrowDBConnection();//从连接池借一个连接对象
                     }
                     Console.WriteLine("<<Info>>insert gps_main.t_gps_snapshot {0}", deviceCode);
-                    logger.log("<<Info>>insert gps_main.t_gps_snapshot " + deviceCode);
+                    logger.Info("insert gps_main.t_gps_snapshot " + deviceCode);
 
                     DBGuid.Insert(conn, insertSnapSql);
                     pool.ReturnDBConnection(conn);//将连接对象还给连接池
@@ -276,7 +284,7 @@ namespace Receive
                     }
 
                     Console.WriteLine("<<Info>>insert {0} {1}", tbPath, deviceCode);
-                    logger.log("<<Info>>insert " + tbPath + " " + deviceCode);
+                    logger.Info("insert " + tbPath + " " + deviceCode);
                     DBGuid.Insert(conn, insertGpsSql);
                     pool.ReturnDBConnection(conn);//将连接对象还给连接池
 
@@ -289,15 +297,12 @@ namespace Receive
                     //    "direction,time,mile,oil,speed2,signal_status,bst,io_status,analog,wifi,satellite_num,create_time,vendor_code,alarm_handle)" +
                     //    "values ('{0}',{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},'{15}',{16},{17},{18},'{19}',{20});",
                     //    devicecode, alc, bst, lat, lon, hgt, spd, agl, operation.getgmtinms(gtm), mlg, oil, spd2, est, bst, io, ad1, yte, gnss, "from_unixtime(now())", vendor, 0);
-                    
+
                 }
-                stopWatch.Stop();
-                long span = stopWatch.ElapsedMilliseconds;
-                logger.log("<<<<<<<<<<<<<msg processed cost " + span + "ms >>>>>>>>>>>>>>> " + deviceCode);
             }
             catch (Exception e)
             {
-                logger.log("failed to process message! " + e.Message);
+                logger.Error(e.Message);
                 return false;
             }
 
@@ -329,7 +334,7 @@ namespace Receive
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
-                logger.log("<<Error>>failed to create connection with rabbitmq server! " + e.Message);
+                logger.Error("failed to create connection with rabbitmq server! " + e.Message);
                 return null;
             }
         }
